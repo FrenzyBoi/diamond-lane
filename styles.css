@@ -1,0 +1,383 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #222;
+}
+
+.container {
+  width: 100%;
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.score-display {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  color: white;
+  font-size: 24px;
+  font-family: Arial, sans-serif;
+  z-index: 10;
+}
+
+.menu-button {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  color: white;
+  font-size: 18px;
+  font-family: Arial, sans-serif;
+  background-color: rgba(0, 0, 0, 0.5);
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.2s;
+}
+
+.menu-button:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.note-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  margin: 0 auto;
+  width: fit-content;
+}
+
+.note-lane {
+  width: 80px;
+  position: relative;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(34,34,34,0.2) 0%, rgba(255,255,255,0.1) 100%);
+  border-left: 1px solid rgba(255,255,255,0.1);
+  border-right: 1px solid rgba(255,255,255,0.1);
+}
+
+.note-lane:nth-child(1) {
+  background: linear-gradient(to bottom, rgba(255,100,255,0.05) 0%, rgba(255,100,255,0.01) 100%);
+}
+
+.note-lane:nth-child(2) {
+  background: linear-gradient(to bottom, rgba(100,100,255,0.05) 0%, rgba(100,100,255,0.01) 100%);
+}
+
+.note-lane:nth-child(3) {
+  background: linear-gradient(to bottom, rgba(100,255,100,0.05) 0%, rgba(100,255,100,0.01) 100%);
+}
+
+.note-lane:nth-child(4) {
+  background: linear-gradient(to bottom, rgba(255,100,100,0.05) 0%, rgba(255,100,100,0.01) 100%);
+}
+
+.hit-zone-indicator {
+  position: absolute;
+  bottom: 100px;
+  width: 100%;
+  height: 5px;
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.falling-note {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  transform-origin: center;
+}
+
+.falling-note.pink-hue {
+  filter: hue-rotate(300deg) saturate(1.5);
+}
+
+.falling-note.blue-hue {
+  filter: hue-rotate(210deg) saturate(1.5);
+}
+
+.falling-note.green-hue {
+  filter: hue-rotate(120deg) saturate(1.5);
+}
+
+.falling-note.red-hue {
+  filter: hue-rotate(0deg) saturate(1.5);
+}
+
+.hit-effect {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-color: white;
+  border-radius: 50%;
+  opacity: 0.7;
+  transform: scale(0);
+  animation: hitAnimation 0.3s ease-out;
+}
+
+@keyframes hitAnimation {
+  0% { transform: scale(0); opacity: 0.7; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.timing-message {
+  position: absolute;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-size: 24px;
+  text-align: center;
+  width: 100%;
+  color: white;
+  text-shadow: 0 0 5px rgba(0, 0, 0, 0.8);
+  animation: fadeOut 0.8s ease-out;
+  pointer-events: none;
+  left: 0;
+  right: 0;
+  margin: auto;
+  z-index: 100;
+}
+
+@keyframes fadeOut {
+  0% { opacity: 1; transform: scale(1); }
+  60% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 0; transform: scale(1); }
+}
+
+.timing-perfect {
+  color: #00ffaa;
+}
+
+.timing-good {
+  color: #8aff00;
+}
+
+.timing-ok {
+  color: #ffcc00;
+}
+
+.timing-early {
+  color: #ff6b6b;
+}
+
+.lane-system {
+  display: flex;
+  justify-content: center;
+  position: fixed;
+  bottom: 20px;
+  left: 0;
+  right: 0;
+  gap: 20px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 10px;
+  width: fit-content;
+  margin: 0 auto;
+  z-index: 5;
+}
+
+.lane {
+  width: 80px;
+  height: 80px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+}
+
+.diamond-icon {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  transform-origin: center;
+  transition: filter 0.1s ease;
+}
+
+.pink-hue {
+  filter: hue-rotate(300deg) saturate(1.5);
+}
+
+.blue-hue {
+  filter: hue-rotate(210deg) saturate(1.5);
+}
+
+.green-hue {
+  filter: hue-rotate(120deg) saturate(1.5);
+}
+
+.red-hue {
+  filter: hue-rotate(0deg) saturate(1.5);
+}
+
+.brightened {
+  filter: brightness(1.25) hue-rotate(300deg) saturate(1.5);
+}
+
+.brightened.blue-hue {
+  filter: brightness(1.25) hue-rotate(210deg) saturate(1.5);
+}
+
+.brightened.green-hue {
+  filter: brightness(1.25) hue-rotate(120deg) saturate(1.5);
+}
+
+.brightened.red-hue {
+  filter: brightness(1.25) hue-rotate(0deg) saturate(1.5);
+}
+
+/* BPM-based visual effects */
+.beat-indicator {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  border-radius: 5px;
+}
+
+.pink-pulse {
+  background-color: rgba(255, 100, 255, 0.3);
+}
+
+.blue-pulse {
+  background-color: rgba(100, 100, 255, 0.3);
+}
+
+.green-pulse {
+  background-color: rgba(100, 255, 100, 0.3);
+}
+
+.red-pulse {
+  background-color: rgba(255, 100, 100, 0.3);
+}
+
+.beat-pulse {
+  animation: beatPulse 0.3s ease-out;
+}
+
+.measure-pulse {
+  animation: measurePulse 0.5s ease-out;
+}
+
+@keyframes beatPulse {
+  0% { opacity: 0.1; }
+  30% { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+
+@keyframes measurePulse {
+  0% { opacity: 0.2; }
+  30% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+
+.hit-zone-pulse {
+  animation: hitZonePulse 0.3s ease-out;
+}
+
+@keyframes hitZonePulse {
+  0% { background-color: rgba(255, 255, 255, 0.3); height: 5px; }
+  50% { background-color: rgba(255, 255, 255, 0.7); height: 7px; }
+  100% { background-color: rgba(255, 255, 255, 0.3); height: 5px; }
+}
+
+.note-pulse {
+  animation: notePulse 0.3s ease-out;
+}
+
+@keyframes notePulse {
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.1); filter: brightness(1.5); }
+  100% { transform: scale(1); filter: brightness(1); }
+}
+
+/* Updated note pulse animations that preserve hue */
+.note-pulse.pink-hue {
+  animation: notePulsePink 0.3s ease-out;
+}
+
+.note-pulse.blue-hue {
+  animation: notePulseBlue 0.3s ease-out;
+}
+
+.note-pulse.green-hue {
+  animation: notePulseGreen 0.3s ease-out;
+}
+
+.note-pulse.red-hue {
+  animation: notePulseRed 0.3s ease-out;
+}
+
+@keyframes notePulsePink {
+  0% { transform: scale(1); filter: hue-rotate(300deg) saturate(1.5) brightness(1); }
+  50% { transform: scale(1.1); filter: hue-rotate(300deg) saturate(1.5) brightness(1.5); }
+  100% { transform: scale(1); filter: hue-rotate(300deg) saturate(1.5) brightness(1); }
+}
+
+@keyframes notePulseBlue {
+  0% { transform: scale(1); filter: hue-rotate(210deg) saturate(1.5) brightness(1); }
+  50% { transform: scale(1.1); filter: hue-rotate(210deg) saturate(1.5) brightness(1.5); }
+  100% { transform: scale(1); filter: hue-rotate(210deg) saturate(1.5) brightness(1); }
+}
+
+@keyframes notePulseGreen {
+  0% { transform: scale(1); filter: hue-rotate(120deg) saturate(1.5) brightness(1); }
+  50% { transform: scale(1.1); filter: hue-rotate(120deg) saturate(1.5) brightness(1.5); }
+  100% { transform: scale(1); filter: hue-rotate(120deg) saturate(1.5) brightness(1); }
+}
+
+@keyframes notePulseRed {
+  0% { transform: scale(1); filter: hue-rotate(0deg) saturate(1.5) brightness(1); }
+  50% { transform: scale(1.1); filter: hue-rotate(0deg) saturate(1.5) brightness(1.5); }
+  100% { transform: scale(1); filter: hue-rotate(0deg) saturate(1.5) brightness(1); }
+}
+
+/* Global animation for the entire lane system for stronger beats */
+@keyframes laneSystemPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* Lane system pulse effects */
+.lane-system-pulse {
+  animation: laneSystemPulse 0.2s ease-out;
+}
+
+.lane-system-measure-pulse {
+  animation: laneSystemMeasurePulse 0.3s ease-out;
+}
+
+@keyframes laneSystemMeasurePulse {
+  0% { transform: scale(1); box-shadow: 0 0 0px rgba(255, 255, 255, 0); }
+  50% { transform: scale(1.04); box-shadow: 0 0 15px rgba(255, 255, 255, 0.3); }
+  100% { transform: scale(1); box-shadow: 0 0 0px rgba(255, 255, 255, 0); }
+}
+
+/* Diamond pulse animation */
+.diamond-pulse {
+  animation: diamondPulse 0.3s ease-out;
+}
+
+@keyframes diamondPulse {
+  0% { transform: rotate(var(--rotation-deg)) scale(1); }
+  50% { transform: rotate(var(--rotation-deg)) scale(1.1); }
+  100% { transform: rotate(var(--rotation-deg)) scale(1); }
+}

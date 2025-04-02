@@ -1,0 +1,44 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diamond Zone</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+  <div class="container">
+    <div class="score-display">Score: <span id="score">0</span></div>
+    <div class="menu-button" onclick="window.location.href='menu.html'">Menu</div>
+    <div class="note-container">
+      <div class="note-lane" id="note-lane-1" data-key="ArrowLeft">
+        <div class="hit-zone-indicator"></div>
+      </div>
+      <div class="note-lane" id="note-lane-2" data-key="ArrowDown">
+        <div class="hit-zone-indicator"></div>
+      </div>
+      <div class="note-lane" id="note-lane-3" data-key="ArrowUp">
+        <div class="hit-zone-indicator"></div>
+      </div>
+      <div class="note-lane" id="note-lane-4" data-key="ArrowRight">
+        <div class="hit-zone-indicator"></div>
+      </div>
+    </div>
+    <div class="lane-system">
+      <div class="lane" id="lane1" data-key="ArrowLeft">
+        <img src="assets/images/note.png" alt="Diamond Symbol" class="diamond-icon pink-hue">
+      </div>
+      <div class="lane" id="lane2" data-key="ArrowDown">
+        <img src="assets/images/note.png" alt="Diamond Symbol" class="diamond-icon blue-hue">
+      </div>
+      <div class="lane" id="lane3" data-key="ArrowUp">
+        <img src="assets/images/note.png" alt="Diamond Symbol" class="diamond-icon green-hue">
+      </div>
+      <div class="lane" id="lane4" data-key="ArrowRight">
+        <img src="assets/images/note.png" alt="Diamond Symbol" class="diamond-icon red-hue">
+      </div>
+    </div>
+  </div>
+  <script src="assets/js/chart.js"></script>
+  <script src="assets/js/script.js"></script>
+</body>
+</html>

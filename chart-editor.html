@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diamond Zone - Chart Editor</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <style>
+    .editor-container {
+      display: flex;
+      height: 100vh;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+    
+    .editor-sidebar {
+      width: 300px;
+      background-color: #333;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #444;
+      overflow-y: auto;
+    }
+    
+    .editor-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 20px;
+      background-color: #222;
+      overflow-y: auto;
+    }
+    
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #444;
+    }
+    
+    .editor-actions {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .editor-button {
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .editor-button:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .editor-button.primary {
+      background-color: #5f6bff;
+    }
+    
+    .editor-button.primary:hover {
+      background-color: #4a56ff;
+    }
+    
+    .editor-button.danger {
+      background-color: #ff6b6b;
+    }
+    
+    .editor-button.danger:hover {
+      background-color: #ff5252;
+    }
+    
+    .chart-metadata {
+      background-color: #2a2a2a;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    
+    .chart-metadata label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .chart-metadata input, 
+    .chart-metadata select {
+      width: 100%;
+      padding: 8px;
+      background-color: #333;
+      border: 1px solid #444;
+      color: white;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    
+    .editor-options {
+      background-color: #2a2a2a;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+    }
+    
+    .toggle-option {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .toggle-option input[type="checkbox"] {
+      margin-right: 8px;
+      width: 16px;
+      height: 16px;
+    }
+    
+    .snap-size-option {
+      margin-top: 10px;
+    }
+    
+    .snap-size-option select {
+      width: 100%;
+      padding: 8px;
+      background-color: #333;
+      border: 1px solid #444;
+      color: white;
+      border-radius: 4px;
+      margin-top: 5px;
+    }
+    
+    .timeline {
+      flex: 1;
+      background-color: #2a2a2a;
+      border-radius: 4px;
+      padding: 10px;
+      position: relative;
+      overflow: auto;
+    }
+    
+    .timeline-header {
+      display: flex;
+      border-bottom: 1px solid #444;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+    
+    .lane-label {
+      width: 50px;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    .time-markers {
+      flex: 1;
+      display: flex;
+      position: relative;
+      padding-left: 50px;
+    }
+    
+    .time-marker {
+      position: absolute;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+    
+    .timeline-content {
+      display: flex;
+      height: 400px;
+      position: relative;
+    }
+    
+    .lane-labels {
+      width: 50px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .lane-label {
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    
+    .timeline-grid {
+      flex: 1;
+      position: relative;
+      background-image: 
+        linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px);
+      background-size: 50px 60px;
+    }
+    
+    /* Added styles for snap grid lines */
+    .snap-grid-line {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 1px;
+      background-color: rgba(255, 255, 255, 0.15);
+      pointer-events: none;
+    }
+    
+    .snap-grid-line.beat {
+      background-color: rgba(255, 255, 255, 0.25);
+    }
+    
+    .snap-grid-line.measure {
+      background-color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .timeline-note {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      cursor: pointer;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-image: url('assets/images/note.png');
+    }
+    
+    .timeline-note.pink-hue {
+      filter: hue-rotate(300deg) saturate(1.5);
+    }
+    
+    .timeline-note.blue-hue {
+      filter: hue-rotate(210deg) saturate(1.5);
+    }
+    
+    .timeline-note.green-hue {
+      filter: hue-rotate(120deg) saturate(1.5);
+    }
+    
+    .timeline-note.red-hue {
+      filter: hue-rotate(0deg) saturate(1.5);
+    }
+    
+    .timeline-note.selected {
+      box-shadow: 0 0 0 2px white;
+    }
+    
+    .note-properties {
+      background-color: #2a2a2a;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+    }
+    
+    .note-properties label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    
+    .note-properties input {
+      width: 100%;
+      padding: 8px;
+      background-color: #333;
+      border: 1px solid #444;
+      color: white;
+      border-radius: 4px;
+      margin-bottom: 15px;
+    }
+    
+    .notes-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    
+    .notes-table th,
+    .notes-table td {
+      border: 1px solid #444;
+      padding: 8px;
+      text-align: left;
+    }
+    
+    .notes-table th {
+      background-color: #333;
+    }
+    
+    .notes-table tr:nth-child(even) {
+      background-color: #2a2a2a;
+    }
+    
+    .return-link {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: white;
+      text-decoration: none;
+      padding: 8px 15px;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 4px;
+      z-index: 10;
+    }
+    
+    .return-link:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .note-placement-preview {
+      position: absolute;
+      width: 40px;
+      height: 40px;
+      border-radius: 4px;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-image: url('assets/images/note.png');
+      opacity: 0.6;
+      pointer-events: none;
+      border: 1px dashed rgba(255, 255, 255, 0.6);
+      transform-origin: center;
+    }
+    
+    .note-placement-preview.pink-hue {
+      filter: hue-rotate(300deg) saturate(1.5);
+    }
+    
+    .note-placement-preview.blue-hue {
+      filter: hue-rotate(210deg) saturate(1.5);
+    }
+    
+    .note-placement-preview.green-hue {
+      filter: hue-rotate(120deg) saturate(1.5);
+    }
+    
+    .note-placement-preview.red-hue {
+      filter: hue-rotate(0deg) saturate(1.5);
+    }
+    
+    /* Playback line style */
+    .playback-line {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      width: 2px;
+      background-color: #ff3333;
+      z-index: 100;
+      pointer-events: none;
+      box-shadow: 0 0 4px rgba(255, 51, 51, 0.7);
+    }
+    
+    /* Preview controls */
+    .preview-controls {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      width: 100%;
+      height: 30px;
+      background-color: rgba(255, 51, 51, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: top 0.3s ease;
+    }
+    
+    .preview-controls.active {
+      top: 0;
+    }
+    
+    .preview-controls button {
+      background-color: #ff3333;
+      border: none;
+      color: white;
+      padding: 4px 12px;
+      margin: 0 5px;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <a href="menu.html" class="return-link">Return to Menu</a>
+  
+  <div class="editor-container">
+    <div class="editor-sidebar">
+      <h2>Chart Editor</h2>
+      <div class="chart-metadata">
+        <label for="chart-title">Song Title</label>
+        <input type="text" id="chart-title" placeholder="Demo Song">
+        
+        <label for="chart-bpm">BPM</label>
+        <input type="number" id="chart-bpm" placeholder="120" min="60" max="200" value="120">
+        
+        <label for="chart-offset">Start Offset (seconds)</label>
+        <input type="number" id="chart-offset" placeholder="0" min="0" step="0.1" value="0">
+        
+        <label for="chart-duration">Duration (seconds)</label>
+        <input type="number" id="chart-duration" placeholder="60" min="10" value="60">
+        
+        <div class="audio-section" style="margin-top: 20px; border-top: 1px solid #444; padding-top: 15px;">
+          <label for="audio-upload">Upload Music (MP3, WAV, OGG)</label>
+          <input type="file" id="audio-upload" accept="audio/*" style="margin-bottom: 15px; width: 100%;">
+          
+          <div id="audio-player-container" style="display: none; margin-bottom: 15px;">
+            <audio id="audio-player" controls style="width: 100%;"></audio>
+            <button id="remove-audio" class="editor-button" style="margin-top: 10px; background-color: #ff5555;">Remove Audio</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="editor-options">
+        <h3>Editor Options</h3>
+        <div class="toggle-option">
+          <input type="checkbox" id="snap-to-grid" checked>
+          <label for="snap-to-grid">Snap to Grid</label>
+        </div>
+        
+        <div class="snap-size-option">
+          <label for="snap-size">Grid Snap Size</label>
+          <select id="snap-size">
+            <option value="1" selected>1 Beat</option>
+            <option value="2">2 Beats</option>
+            <option value="4">4 Beats (Measure)</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="notes-list">
+        <h3>Notes</h3>
+        <table class="notes-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Lane</th>
+              <th>Speed</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="notes-table-body">
+            <!-- Notes will be listed here -->
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="editor-actions" style="margin-top: 20px;">
+        <button id="create-new-chart" class="editor-button">New Chart</button>
+        <button id="save-chart" class="editor-button primary">Save Chart</button>
+      </div>
+      
+      <div class="editor-actions" style="margin-top: 10px;">
+        <button id="load-chart" class="editor-button">Load Chart</button>
+        <button id="test-chart" class="editor-button primary">Test Chart</button>
+      </div>
+      
+      <div class="editor-actions" style="margin-top: 10px;">
+        <button id="export-chart" class="editor-button">Export JSON</button>
+        <button id="import-chart" class="editor-button">Import JSON</button>
+      </div>
+    </div>
+    
+    <div class="editor-main">
+      <div class="editor-header">
+        <h3>Timeline Editor</h3>
+        <div class="editor-actions">
+          <button id="preview-chart" class="editor-button" style="background-color: #ff5555;">Preview Chart</button>
+          <button id="add-note" class="editor-button">Add Note</button>
+          <button id="delete-note" class="editor-button danger">Delete Selected</button>
+          <button id="clear-all" class="editor-button danger">Clear All</button>
+        </div>
+      </div>
+      
+      <div class="timeline">
+        <div class="timeline-header">
+          <div class="time-markers" id="time-markers">
+            <!-- Time markers will be generated here -->
+          </div>
+        </div>
+        
+        <div class="timeline-content">
+          <div class="lane-labels">
+            <div class="lane-label pink-hue">Left</div>
+            <div class="lane-label blue-hue">Down</div>
+            <div class="lane-label green-hue">Up</div>
+            <div class="lane-label red-hue">Right</div>
+          </div>
+          
+          <div class="timeline-grid" id="timeline-grid">
+            <!-- Notes will be placed here -->
+          </div>
+        </div>
+      </div>
+      
+      <div class="note-properties" id="note-properties" style="display: none;">
+        <h3>Note Properties</h3>
+        <label for="note-time">Time (seconds)</label>
+        <input type="number" id="note-time" min="0" step="0.1" value="1.0">
+        
+        <label for="note-lane">Lane</label>
+        <select id="note-lane">
+          <option value="0">Lane 1 (Left)</option>
+          <option value="1">Lane 2 (Down)</option>
+          <option value="2">Lane 3 (Up)</option>
+          <option value="3">Lane 4 (Right)</option>
+        </select>
+        
+        <label for="note-speed">Speed</label>
+        <input type="number" id="note-speed" min="1" max="10" step="0.5" value="4">
+        
+        <div class="editor-actions" style="margin-top: 15px;">
+          <button id="update-note" class="editor-button primary">Update Note</button>
+          <button id="cancel-edit" class="editor-button">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Chart data structure
+      let chartData = {
+        title: "Demo Song",
+        bpm: 120,
+        offset: 0,
+        duration: 60,
+        notes: [],
+        audioData: null,
+        audioFormat: null
+      };
+      
+      // Editor state
+      let selectedNote = null;
+      let chartModified = false;
+      let snapToGrid = true;
+      let snapSize = 1; // Default to 1 beat
+      
+      // Song preview functionality
+      let isPreviewPlaying = false;
+      let playbackLine = null;
+      let previewStartTime = 0;
+      let previewAnimationId = null;
+      let previewAudio = null;
+      
+      // DOM elements
+      const chartTitle = document.getElementById('chart-title');
+      const chartBpm = document.getElementById('chart-bpm');
+      const chartOffset = document.getElementById('chart-offset');
+      const chartDuration = document.getElementById('chart-duration');
+      const timelineGrid = document.getElementById('timeline-grid');
+      const timeMarkers = document.getElementById('time-markers');
+      const notesTableBody = document.getElementById('notes-table-body');
+      const noteProperties = document.getElementById('note-properties');
+      const noteTime = document.getElementById('note-time');
+      const noteLane = document.getElementById('note-lane');
+      const noteSpeed = document.getElementById('note-speed');
+      const snapToGridToggle = document.getElementById('snap-to-grid');
+      const snapSizeSelect = document.getElementById('snap-size');
+      
+      // Initialize form values
+      chartTitle.value = chartData.title;
+      chartBpm.value = chartData.bpm;
+      chartOffset.value = chartData.offset;
+      chartDuration.value = chartData.duration;
+      
+      // Grid snapping settings
+      snapToGridToggle.addEventListener('change', (e) => {
+        snapToGrid = e.target.checked;
+        updateSnapGridLines();
+      });
+      
+      snapSizeSelect.addEventListener('change', (e) => {
+        snapSize = parseFloat(e.target.value);
+        updateSnapGridLines();
+      });
+      
+      // Function to snap time value to grid
+      function snapTimeToGrid(time) {
+        if (!snapToGrid) return time;
+        
+        // Calculate beat length in seconds
+        const beatLengthSec = 60 / chartData.bpm;
+        
+        // Calculate snap interval in seconds
+        const snapIntervalSec = beatLengthSec * snapSize;
+        
+        // Calculate how many snap intervals fit in the time
+        const intervals = Math.round(time / snapIntervalSec);
+        
+        // Return snapped time
+        return parseFloat((intervals * snapIntervalSec).toFixed(2));
+      }
+      
+      // Function to create snap grid lines
+      function updateSnapGridLines() {
+        // Clear existing grid lines
+        const existingLines = document.querySelectorAll('.snap-grid-line');
+        existingLines.forEach(line => line.remove());
+        
+        if (!snapToGrid) return;
+        
+        const duration = parseInt(chartDuration.value);
+        const bpm = parseInt(chartBpm.value);
+        const beatLengthSec = 60 / bpm;
+        
+        // Get the snap interval based on the selected size
+        const snapIntervalSec = beatLengthSec * snapSize;
+        
+        // Create lines for each snap point
+        for (let time = 0; time <= duration; time += snapIntervalSec) {
+          const line = document.createElement('div');
+          line.className = 'snap-grid-line';
+          
+          // Add special classes for beats and measures
+          if (time % beatLengthSec < 0.001) {
+            line.classList.add('beat');
+          }
+          
+          if (time % (beatLengthSec * 4) < 0.001) {
+            line.classList.add('measure');
+          }
+          
+          // Position the line
+          line.style.left = (time * 50) + 'px';
+          
+          timelineGrid.appendChild(line);
+        }
+        
+        // Re-render notes
+        renderNotes();
+      }
+      
+      // Also update grid lines when BPM changes
+      chartBpm.addEventListener('change', () => {
+        updateChartData();
+        updateSnapGridLines();
+      });
+      
+      // Generate time markers
+      function generateTimeMarkers() {
+        timeMarkers.innerHTML = '';
+        const duration = parseInt(chartDuration.value);
+        for (let i = 0; i <= duration; i += 5) {
+          const marker = document.createElement('div');
+          marker.className = 'time-marker';
+          marker.textContent = i + 's';
+          marker.style.left = (i * 50) + 'px';
+          timeMarkers.appendChild(marker);
+        }
+      }
+      
+      // Initialize time markers and grid lines
+      generateTimeMarkers();
+      updateSnapGridLines();
+      
+      // Update chart data from form
+      function updateChartData() {
+        chartData.title = chartTitle.value;
+        chartData.bpm = parseInt(chartBpm.value);
+        chartData.offset = parseFloat(chartOffset.value);
+        chartData.duration = parseInt(chartDuration.value);
+        chartModified = true;
+        
+        // Regenerate time markers when duration changes
+        generateTimeMarkers();
+        updateSnapGridLines();
+      }
+      
+      // Add event listeners to form inputs
+      chartTitle.addEventListener('change', updateChartData);
+      chartBpm.addEventListener('change', updateChartData);
+      chartOffset.addEventListener('change', updateChartData);
+      chartDuration.addEventListener('change', updateChartData);
+      
+      // Additional listener specifically for duration to update grid lines
+      chartDuration.addEventListener('change', () => {
+        updateSnapGridLines();
+      });
+      
+      // Render notes on the timeline
+      function renderNotes() {
+        // Clear existing notes
+        const existingNotes = document.querySelectorAll('.timeline-note');
+        existingNotes.forEach(note => note.remove());
+        
+        // Add notes to the timeline
+        chartData.notes.forEach((note, index) => {
+          const noteElement = document.createElement('div');
+          noteElement.className = 'timeline-note';
+          
+          // Add color class based on lane
+          if (note.lane === 0) noteElement.classList.add('pink-hue');
+          else if (note.lane === 1) noteElement.classList.add('blue-hue');
+          else if (note.lane === 2) noteElement.classList.add('green-hue');
+          else if (note.lane === 3) noteElement.classList.add('red-hue');
+          
+          // Position note on the timeline
+          noteElement.style.left = (note.time * 50) + 'px';
+          noteElement.style.top = (note.lane * 70 + 10) + 'px';
+          
+          // Add data attributes for reference
+          noteElement.dataset.index = index;
+          
+          // Add click event to select note
+          noteElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            selectNote(index);
+          });
+          
+          timelineGrid.appendChild(noteElement);
+        });
+        
+        updateNotesTable();
+      }
+      
+      // Update the notes table
+      function updateNotesTable() {
+        notesTableBody.innerHTML = '';
+        
+        chartData.notes.forEach((note, index) => {
+          const row = document.createElement('tr');
+          
+          const timeCell = document.createElement('td');
+          timeCell.textContent = note.time.toFixed(1) + 's';
+          
+          const laneCell = document.createElement('td');
+          const laneNames = ['Left', 'Down', 'Up', 'Right'];
+          laneCell.textContent = laneNames[note.lane];
+          
+          const speedCell = document.createElement('td');
+          speedCell.textContent = note.speed;
+          
+          const actionsCell = document.createElement('td');
+          const editButton = document.createElement('button');
+          editButton.textContent = 'Edit';
+          editButton.className = 'editor-button';
+          editButton.style.padding = '4px 8px';
+          editButton.style.fontSize = '12px';
+          editButton.addEventListener('click', () => selectNote(index));
+          
+          actionsCell.appendChild(editButton);
+          
+          row.appendChild(timeCell);
+          row.appendChild(laneCell);
+          row.appendChild(speedCell);
+          row.appendChild(actionsCell);
+          
+          notesTableBody.appendChild(row);
+        });
+      }
+      
+      // Select a note for editing
+      function selectNote(index) {
+        // Deselect previously selected note
+        const prevSelected = document.querySelector('.timeline-note.selected');
+        if (prevSelected) {
+          prevSelected.classList.remove('selected');
+        }
+        
+        // Select new note
+        selectedNote = index;
+        const noteElement = document.querySelector(`.timeline-note[data-index="${index}"]`);
+        if (noteElement) {
+          noteElement.classList.add('selected');
+        }
+        
+        // Populate note properties form
+        const note = chartData.notes[index];
+        noteTime.value = note.time;
+        noteLane.value = note.lane;
+        noteSpeed.value = note.speed;
+        
+        // Show the note properties panel
+        noteProperties.style.display = 'block';
+      }
+      
+      // Update the selected note
+      document.getElementById('update-note').addEventListener('click', () => {
+        if (selectedNote !== null) {
+          let time = parseFloat(noteTime.value);
+          
+          // Apply snapping if enabled
+          if (snapToGrid) {
+            time = snapTimeToGrid(time);
+          }
+          
+          chartData.notes[selectedNote] = {
+            time: time,
+            lane: parseInt(noteLane.value),
+            speed: parseFloat(noteSpeed.value)
+          };
+          
+          // Sort notes by time
+          chartData.notes.sort((a, b) => a.time - b.time);
+          
+          // Re-render notes
+          renderNotes();
+          
+          // Update selected note index if it changed due to sorting
+          const newIndex = chartData.notes.findIndex(note => 
+            note.time === time && 
+            note.lane === parseInt(noteLane.value)
+          );
+          
+          // Hide properties panel
+          noteProperties.style.display = 'none';
+          selectedNote = null;
+          
+          chartModified = true;
+        }
+      });
+      
+      // Cancel note editing
+      document.getElementById('cancel-edit').addEventListener('click', () => {
+        // Deselect the note
+        const selected = document.querySelector('.timeline-note.selected');
+        if (selected) {
+          selected.classList.remove('selected');
+        }
+        
+        // Hide properties panel
+        noteProperties.style.display = 'none';
+        selectedNote = null;
+      });
+      
+      // Add a new note
+      document.getElementById('add-note').addEventListener('click', () => {
+        const newNote = {
+          time: 1.0,
+          lane: 0,
+          speed: 4
+        };
+        
+        chartData.notes.push(newNote);
+        chartData.notes.sort((a, b) => a.time - b.time);
+        
+        renderNotes();
+        
+        // Select the new note
+        const newIndex = chartData.notes.findIndex(note => 
+          note.time === newNote.time && 
+          note.lane === newNote.lane
+        );
+        
+        selectNote(newIndex);
+        chartModified = true;
+      });
+      
+      // Delete selected note
+      document.getElementById('delete-note').addEventListener('click', () => {
+        if (selectedNote !== null) {
+          chartData.notes.splice(selectedNote, 1);
+          renderNotes();
+          noteProperties.style.display = 'none';
+          selectedNote = null;
+          chartModified = true;
+        }
+      });
+      
+      // Clear all notes
+      document.getElementById('clear-all').addEventListener('click', () => {
+        if (confirm('Are you sure you want to remove all notes?')) {
+          chartData.notes = [];
+          renderNotes();
+          noteProperties.style.display = 'none';
+          selectedNote = null;
+          chartModified = true;
+        }
+      });
+      
+      // Create a new chart
+      document.getElementById('create-new-chart').addEventListener('click', () => {
+        if (chartModified && !confirm('Discard unsaved changes?')) {
+          return;
+        }
+        
+        chartData = {
+          title: "New Chart",
+          bpm: 120,
+          offset: 0,
+          duration: 60,
+          notes: [],
+          audioData: null,
+          audioFormat: null
+        };
+        
+        chartTitle.value = chartData.title;
+        chartBpm.value = chartData.bpm;
+        chartOffset.value = chartData.offset;
+        chartDuration.value = chartData.duration;
+        
+        renderNotes();
+        generateTimeMarkers();
+        
+        noteProperties.style.display = 'none';
+        selectedNote = null;
+        chartModified = false;
+      });
+      
+      // Save the chart
+      document.getElementById('save-chart').addEventListener('click', () => {
+        updateChartData();
+        
+        // Validate chart before saving
+        if (chartData.title.trim() === '') {
+          alert('Please enter a song title.');
+          return;
+        }
+        
+        if (chartData.notes.length === 0) {
+          alert('Chart has no notes. Please add at least one note.');
+          return;
+        }
+        
+        // Generate filename from title
+        const filename = chartData.title.toLowerCase().replace(/\s+/g, '_') + '.json';
+        
+        // Create a JSON blob
+        const jsonData = JSON.stringify(chartData, null, 2);
+        const blob = new Blob([jsonData], { type: 'application/json' });
+        
+        // Create download link
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = filename;
+        link.click();
+        
+        // Clean up
+        URL.revokeObjectURL(link.href);
+        chartModified = false;
+        
+        // Save to localStorage for testing
+        localStorage.setItem('lastEditedChart', jsonData);
+        alert('Chart saved! You can now test it or add it to your freeplay list.');
+      });
+      
+      // Test the chart
+      document.getElementById('test-chart').addEventListener('click', () => {
+        if (chartData.notes.length === 0) {
+          alert('Your chart has no notes. Add some notes before testing.');
+          return;
+        }
+        
+        // Create a confirmation dialog with export reminder
+        const dialogOverlay = document.createElement('div');
+        dialogOverlay.style.position = 'fixed';
+        dialogOverlay.style.top = '0';
+        dialogOverlay.style.left = '0';
+        dialogOverlay.style.width = '100%';
+        dialogOverlay.style.height = '100%';
+        dialogOverlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        dialogOverlay.style.zIndex = '1000';
+        dialogOverlay.style.display = 'flex';
+        dialogOverlay.style.justifyContent = 'center';
+        dialogOverlay.style.alignItems = 'center';
+        
+        const dialogBox = document.createElement('div');
+        dialogBox.style.backgroundColor = '#333';
+        dialogBox.style.padding = '30px';
+        dialogBox.style.borderRadius = '8px';
+        dialogBox.style.maxWidth = '500px';
+        dialogBox.style.boxShadow = '0 5px 15px rgba(0, 0, 0, 0.3)';
+        
+        dialogBox.innerHTML = `
+          <h2 style="margin-top: 0; color: white; margin-bottom: 20px;">Test Chart</h2>
+          <p style="color: white; margin-bottom: 15px;">Before testing your chart, it's recommended to export your JSON data to preserve your work.</p>
+          <p style="color: white; margin-bottom: 25px;">To load this chart again, come back to the chart editor and use the "Import Chart" button.</p>
+          <div style="display: flex; justify-content: space-between; gap: 10px;">
+            <button id="cancel-test" style="padding: 10px 15px; background-color: #555; border: none; color: white; border-radius: 4px; cursor: pointer; flex-grow: 1;">Cancel Test</button>
+            <button id="continue-test" style="padding: 10px 15px; background-color: #ff9800; border: none; color: white; border-radius: 4px; cursor: pointer; flex-grow: 1;">Continue without Export</button>
+            <button id="export-and-test" style="padding: 10px 15px; background-color: #5f6bff; border: none; color: white; border-radius: 4px; cursor: pointer; flex-grow: 1;">Export and Test</button>
+          </div>
+        `;
+        
+        dialogOverlay.appendChild(dialogBox);
+        document.body.appendChild(dialogOverlay);
+        
+        // Handle dialog buttons
+        document.getElementById('cancel-test').addEventListener('click', () => {
+          document.body.removeChild(dialogOverlay);
+        });
+        
+        document.getElementById('continue-test').addEventListener('click', () => {
+          document.body.removeChild(dialogOverlay);
+          startChartTest();
+        });
+        
+        document.getElementById('export-and-test').addEventListener('click', () => {
+          // Export chart JSON to clipboard
+          const jsonData = JSON.stringify(chartData, null, 2);
+          
+          // Create a temporary textarea to copy text
+          const textarea = document.createElement('textarea');
+          textarea.value = jsonData;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+          
+          // Show confirmation toast
+          showToast('Chart JSON copied to clipboard!');
+          
+          // Slight delay before continuing to test
+          setTimeout(() => {
+            document.body.removeChild(dialogOverlay);
+            startChartTest();
+          }, 1000);
+        });
+      });
+      
+      function startChartTest() {
+        // Save current chart to localStorage for testing
+        localStorage.setItem('lastEditedChart', JSON.stringify(chartData));
+        
+        if (chartData.audioData && chartData.audioFormat) {
+          // Show a special message for charts with audio
+          showToast('Starting test with music...', 'rgba(255, 51, 51, 0.9)');
+          
+          // Create a hidden button and click it to enable audio - browsers require user interaction
+          const interactionHelper = document.createElement('button');
+          interactionHelper.style.position = 'fixed';
+          interactionHelper.style.opacity = '0';
+          interactionHelper.style.pointerEvents = 'none';
+          document.body.appendChild(interactionHelper);
+          interactionHelper.click();
+          document.body.removeChild(interactionHelper);
+          
+          // Slight delay to ensure the toast is seen
+          setTimeout(() => {
+            // Navigate to game with test parameter
+            window.location.href = 'index.html?test=true';
+          }, 800);
+        } else {
+          // Navigate directly to test mode if no audio
+          window.location.href = 'index.html?test=true';
+        }
+      }
+      
+      // Enhanced toast function with custom colors
+      function showToast(message, bgColor = 'rgba(0, 255, 170, 0.9)') {
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.textContent = message;
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.left = '50%';
+        toast.style.transform = 'translateX(-50%)';
+        toast.style.backgroundColor = bgColor;
+        toast.style.color = 'white';
+        toast.style.padding = '10px 20px';
+        toast.style.borderRadius = '5px';
+        toast.style.zIndex = '1000';
+        toast.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.style.opacity = '0';
+          toast.style.transition = 'opacity 0.5s';
+          setTimeout(() => {
+            document.body.removeChild(toast);
+          }, 500);
+        }, 3000);
+      }
+      
+      // Add audio controls and upload button in the chart metadata section
+      const audioUpload = document.getElementById('audio-upload');
+      const audioPlayer = document.getElementById('audio-player');
+      const audioPlayerContainer = document.getElementById('audio-player-container');
+      const removeAudioButton = document.getElementById('remove-audio');
+      
+      audioUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        // Check file size - limit to 10MB to avoid performance issues
+        if (file.size > 10 * 1024 * 1024) {
+          alert('File is too large. Please select an audio file smaller than 10MB.');
+          e.target.value = '';
+          return;
+        }
+        
+        // Create object URL for preview
+        const objectUrl = URL.createObjectURL(file);
+        audioPlayer.src = objectUrl;
+        audioPlayerContainer.style.display = 'block';
+        
+        // Store file format
+        const format = file.type.split('/')[1];
+        chartData.audioFormat = format;
+        
+        // Convert file to base64
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          // Get base64 string (remove the data URL prefix)
+          const base64String = event.target.result.split(',')[1];
+          chartData.audioData = base64String;
+          chartModified = true;
+          
+          // Show success message
+          showToast('Audio file loaded successfully!');
+        };
+        reader.readAsDataURL(file);
+      });
+      
+      // Remove audio button
+      removeAudioButton.addEventListener('click', () => {
+        audioPlayer.src = '';
+        audioPlayerContainer.style.display = 'none';
+        audioUpload.value = '';
+        chartData.audioData = null;
+        chartData.audioFormat = null;
+        chartModified = true;
+      });
+      
+      // Export chart as JSON
+      document.getElementById('export-chart').addEventListener('click', () => {
+        updateChartData();
+        
+        // Generate pretty JSON
+        const jsonData = JSON.stringify(chartData, null, 2);
+        
+        // Create a temporary textarea to copy text
+        const textarea = document.createElement('textarea');
+        textarea.value = jsonData;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        alert('Chart JSON copied to clipboard!');
+      });
+      
+      // Import chart from JSON
+      document.getElementById('import-chart').addEventListener('click', () => {
+        if (chartModified && !confirm('Discard unsaved changes?')) {
+          return;
+        }
+        
+        const jsonInput = prompt('Paste chart JSON:');
+        if (!jsonInput) return;
+        
+        try {
+          const importedData = JSON.parse(jsonInput);
+          
+          // Validate imported data
+          if (!importedData.title || !importedData.bpm || !Array.isArray(importedData.notes)) {
+            throw new Error('Invalid chart format');
+          }
+          
+          // Import the data
+          chartData = importedData;
+          
+          // Update form
+          chartTitle.value = chartData.title;
+          chartBpm.value = chartData.bpm;
+          chartOffset.value = chartData.offset || 0;
+          chartDuration.value = chartData.duration || 60;
+          
+          // Handle audio if present
+          if (chartData.audioData && chartData.audioFormat) {
+            // Create audio element with base64 data
+            const audioSrc = `data:audio/${chartData.audioFormat};base64,${chartData.audioData}`;
+            audioPlayer.src = audioSrc;
+            audioPlayerContainer.style.display = 'block';
+          } else {
+            audioPlayer.src = '';
+            audioPlayerContainer.style.display = 'none';
+          }
+          
+          renderNotes();
+          generateTimeMarkers();
+          
+          noteProperties.style.display = 'none';
+          selectedNote = null;
+          chartModified = false;
+          
+          showToast('Chart imported successfully!');
+        } catch (error) {
+          alert('Invalid JSON format. Could not import chart.');
+          console.error(error);
+        }
+      });
+      
+      // Load an existing chart
+      document.getElementById('load-chart').addEventListener('click', () => {
+        if (chartModified && !confirm('Discard unsaved changes?')) {
+          return;
+        }
+        
+        // Get charts from localStorage
+        const charts = JSON.parse(localStorage.getItem('chartsList') || '[]');
+        
+        if (charts.length === 0) {
+          alert('No saved charts found. Save a chart first or import from JSON.');
+          return;
+        }
+        
+        // Create chart selection dialog
+        let chartOptions = '';
+        charts.forEach((chart, index) => {
+          chartOptions += `<option value="${index}">${chart.title} (BPM: ${chart.bpm})</option>`;
+        });
+        
+        const selectDialog = document.createElement('div');
+        selectDialog.style.position = 'fixed';
+        selectDialog.style.top = '50%';
+        selectDialog.style.left = '50%';
+        selectDialog.style.transform = 'translate(-50%, -50%)';
+        selectDialog.style.backgroundColor = '#333';
+        selectDialog.style.padding = '20px';
+        selectDialog.style.borderRadius = '8px';
+        selectDialog.style.zIndex = '1000';
+        selectDialog.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
+        
+        selectDialog.innerHTML = `
+          <h3 style="margin-top: 0; margin-bottom: 15px;">Select a Chart</h3>
+          <select id="chart-select" style="width: 100%; padding: 8px; background-color: #444; border: 1px solid #555; color: white; border-radius: 4px; margin-bottom: 15px;">
+            ${chartOptions}
+          </select>
+          <div style="display: flex; justify-content: flex-end; gap: 10px;">
+            <button id="dialog-cancel" style="padding: 8px 15px; background-color: #555; border: none; color: white; border-radius: 4px; cursor: pointer;">Cancel</button>
+            <button id="dialog-load" style="padding: 8px 15px; background-color: #5f6bff; border: none; color: white; border-radius: 4px; cursor: pointer;">Load</button>
+          </div>
+        `;
+        
+        document.body.appendChild(selectDialog);
+        
+        // Handle dialog actions
+        document.getElementById('dialog-cancel').addEventListener('click', () => {
+          document.body.removeChild(selectDialog);
+        });
+        
+        document.getElementById('dialog-load').addEventListener('click', () => {
+          const selectedIndex = document.getElementById('chart-select').value;
+          const selectedChart = charts[selectedIndex];
+          
+          // Load the selected chart
+          chartData = { ...selectedChart };
+          
+          // Update form
+          chartTitle.value = chartData.title;
+          chartBpm.value = chartData.bpm;
+          chartOffset.value = chartData.offset || 0;
+          chartDuration.value = chartData.duration || 60;
+          
+          // Handle audio if present
+          if (chartData.audioData && chartData.audioFormat) {
+            // Create audio element with base64 data
+            const audioSrc = `data:audio/${chartData.audioFormat};base64,${chartData.audioData}`;
+            audioPlayer.src = audioSrc;
+            audioPlayerContainer.style.display = 'block';
+          } else {
+            audioPlayer.src = '';
+            audioPlayerContainer.style.display = 'none';
+          }
+          
+          renderNotes();
+          generateTimeMarkers();
+          
+          noteProperties.style.display = 'none';
+          selectedNote = null;
+          chartModified = false;
+          
+          document.body.removeChild(selectDialog);
+        });
+      });
+      
+      // Allow clicking on the timeline grid to add a note
+      timelineGrid.addEventListener('click', (e) => {
+        if (e.target === timelineGrid) {
+          // Calculate time and lane from click position
+          const rect = timelineGrid.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          
+          // Calculate time (pixels to seconds)
+          let time = Math.max(0, x / 50);
+          
+          // Apply snapping if enabled
+          if (snapToGrid) {
+            time = snapTimeToGrid(time);
+          } else {
+            time = parseFloat(time.toFixed(1));
+          }
+          
+          // Calculate lane (0-3)
+          const lane = Math.min(3, Math.max(0, Math.floor(y / 70)));
+          
+          // Create a new note
+          const newNote = {
+            time: time,
+            lane: lane,
+            speed: 4
+          };
+          
+          chartData.notes.push(newNote);
+          chartData.notes.sort((a, b) => a.time - b.time);
+          
+          renderNotes();
+          
+          // Select the new note
+          const newIndex = chartData.notes.findIndex(note => 
+            note.time === newNote.time && 
+            note.lane === newNote.lane
+          );
+          
+          selectNote(newIndex);
+          chartModified = true;
+        }
+      });
+      
+      // Add hover preview for grid snapping
+      timelineGrid.addEventListener('mousemove', (e) => {
+        // Remove existing preview
+        const existingPreview = document.querySelector('.note-placement-preview');
+        if (existingPreview) {
+          existingPreview.remove();
+        }
+        
+        // Create preview element at cursor position
+        const rect = timelineGrid.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        // Calculate time (pixels to seconds)
+        let time = Math.max(0, x / 50);
+        
+        // Apply snapping if enabled
+        if (snapToGrid) {
+          time = snapTimeToGrid(time);
+        }
+        
+        // Calculate lane (0-3)
+        const lane = Math.min(3, Math.max(0, Math.floor(y / 70)));
+        
+        // Create preview element
+        const preview = document.createElement('div');
+        preview.className = 'note-placement-preview';
+        
+        // Add appropriate hue class based on lane
+        if (lane === 0) preview.classList.add('pink-hue');
+        else if (lane === 1) preview.classList.add('blue-hue');
+        else if (lane === 2) preview.classList.add('green-hue');
+        else if (lane === 3) preview.classList.add('red-hue');
+        
+        // Position preview
+        preview.style.left = (time * 50) + 'px';
+        preview.style.top = (lane * 70 + 10) + 'px';
+        
+        // Add to timeline
+        timelineGrid.appendChild(preview);
+      });
+      
+      timelineGrid.addEventListener('mouseleave', () => {
+        // Remove preview when mouse leaves grid
+        const existingPreview = document.querySelector('.note-placement-preview');
+        if (existingPreview) {
+          existingPreview.remove();
+        }
+      });
+      
+      // Song preview functionality
+      document.getElementById('preview-chart').addEventListener('click', () => {
+        if (isPreviewPlaying) {
+          stopPreview();
+        } else {
+          startPreview();
+        }
+      });
+      
+      function startPreview() {
+        // Create a playback line if it doesn't exist
+        if (!playbackLine) {
+          playbackLine = document.createElement('div');
+          playbackLine.className = 'playback-line';
+          timelineGrid.appendChild(playbackLine);
+          
+          // Create preview controls
+          const previewControls = document.createElement('div');
+          previewControls.className = 'preview-controls active';
+          previewControls.id = 'preview-controls';
+          previewControls.innerHTML = `
+            <button id="stop-preview">Stop Preview</button>
+          `;
+          timelineGrid.appendChild(previewControls);
+          
+          // Add event listener to stop button
+          document.getElementById('stop-preview').addEventListener('click', stopPreview);
+        }
+        
+        // Change button text
+        document.getElementById('preview-chart').textContent = 'Stop Preview';
+        document.getElementById('preview-chart').style.backgroundColor = '#ff3333';
+        
+        // Reset the playback line to the start position
+        playbackLine.style.left = '0px';
+        playbackLine.style.display = 'block';
+        
+        // Show preview controls
+        const previewControls = document.getElementById('preview-controls');
+        if (previewControls) {
+          previewControls.classList.add('active');
+        }
+        
+        // Record the start time
+        previewStartTime = performance.now();
+        isPreviewPlaying = true;
+        
+        // Calculate total animation duration
+        const duration = parseInt(chartDuration.value);
+        const totalAnimationTime = duration * 1000; // milliseconds
+        
+        // If chart has audio, play it during preview
+        if (chartData.audioData && chartData.audioFormat) {
+          if (!previewAudio) {
+            previewAudio = document.createElement('audio');
+            previewAudio.id = 'preview-audio';
+            document.body.appendChild(previewAudio);
+          }
+          
+          // Set up the audio with the chart's base64 data
+          const audioSrc = `data:audio/${chartData.audioFormat};base64,${chartData.audioData}`;
+          previewAudio.src = audioSrc;
+          previewAudio.currentTime = 0;
+          
+          // Play the audio
+          const playPromise = previewAudio.play();
+          if (playPromise) {
+            playPromise.catch(err => {
+              console.error('Error playing audio:', err);
+              // Fallback to animation-only preview if audio fails
+              animatePlaybackLine(duration, totalAnimationTime);
+            });
+          }
+        }
+        
+        // Start animating the playback line
+        animatePlaybackLine(duration, totalAnimationTime);
+      }
+      
+      function animatePlaybackLine(duration, totalAnimationTime) {
+        // Animation function for the playback line
+        function animate() {
+          const currentTime = performance.now();
+          const elapsedTime = currentTime - previewStartTime;
+          const progress = Math.min(elapsedTime / totalAnimationTime, 1);
+          
+          // Calculate the position of the line (duration * 50 is the total width in pixels)
+          const position = progress * (duration * 50);
+          playbackLine.style.left = `${position}px`;
+          
+          // Scroll the timeline to follow the playback line
+          const timelineContent = document.querySelector('.timeline-content');
+          if (timelineContent) {
+            const scrollPosition = position - timelineContent.clientWidth / 2;
+            timelineContent.parentElement.scrollLeft = Math.max(0, scrollPosition);
+          }
+          
+          // Continue animation if not finished
+          if (progress < 1) {
+            previewAnimationId = requestAnimationFrame(animate);
+          } else {
+            // Animation complete
+            stopPreview();
+          }
+        }
+        
+        // Start the animation
+        previewAnimationId = requestAnimationFrame(animate);
+      }
+      
+      function stopPreview() {
+        // Cancel the animation
+        if (previewAnimationId) {
+          cancelAnimationFrame(previewAnimationId);
+          previewAnimationId = null;
+        }
+        
+        // Reset the button
+        document.getElementById('preview-chart').textContent = 'Preview Chart';
+        document.getElementById('preview-chart').style.backgroundColor = '#ff5555';
+        
+        // Hide playback line
+        if (playbackLine) {
+          playbackLine.style.display = 'none';
+        }
+        
+        // Hide preview controls
+        const previewControls = document.getElementById('preview-controls');
+        if (previewControls) {
+          previewControls.classList.remove('active');
+        }
+        
+        // Stop the audio if it's playing
+        if (previewAudio) {
+          previewAudio.pause();
+          previewAudio.currentTime = 0;
+        }
+        
+        isPreviewPlaying = false;
+      }
+      
+      // Clean up preview when leaving the page
+      window.addEventListener('beforeunload', () => {
+        if (isPreviewPlaying) {
+          stopPreview();
+        }
+      });
+      
+      // Initialize the editor
+      renderNotes();
+    });
+  </script>
+</body>
+</html> 

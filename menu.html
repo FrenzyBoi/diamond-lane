@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diamond Zone - Menu</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #222;
+      font-family: Arial, sans-serif;
+      color: white;
+      overflow: hidden;
+      background: radial-gradient(circle, #333 0%, #111 100%);
+    }
+    
+    .menu-container {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .game-title {
+      font-size: 3.5rem;
+      margin-bottom: 2rem;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: white;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+                   0 0 20px rgba(255, 255, 255, 0.3),
+                   0 0 30px rgba(255, 255, 255, 0.1);
+    }
+    
+    .menu-options {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    
+    .menu-button {
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+      z-index: 1;
+      width: 250px;
+      margin: 0 auto;
+    }
+    
+    .menu-button:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+    
+    .menu-button:before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      transition: 0.5s;
+      z-index: -1;
+    }
+    
+    .menu-button:hover:before {
+      left: 100%;
+    }
+    
+    .diamond-bg {
+      position: fixed;
+      width: 100vw;
+      height: 100vh;
+      top: 0;
+      left: 0;
+      z-index: 0;
+      opacity: 0.3;
+    }
+    
+    .diamond {
+      position: absolute;
+      background-image: url('assets/images/note.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      width: 60px;
+      height: 60px;
+      animation: float 10s infinite ease-in-out;
+      opacity: 0.15;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+    }
+    
+    .pink-hue { filter: hue-rotate(300deg) saturate(1.5); }
+    .blue-hue { filter: hue-rotate(210deg) saturate(1.5); }
+    .green-hue { filter: hue-rotate(120deg) saturate(1.5); }
+    .red-hue { filter: hue-rotate(0deg) saturate(1.5); }
+    
+    .version-info {
+      position: absolute;
+      bottom: 1rem;
+      right: 1rem;
+      font-size: 0.8rem;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="diamond-bg" id="diamond-bg"></div>
+  
+  <div class="menu-container">
+    <h1 class="game-title">Diamond Zone</h1>
+    
+    <div class="menu-options">
+      <button class="menu-button" id="story-mode">Story Mode</button>
+      <button class="menu-button" id="freeplay-mode">Freeplay</button>
+      <button class="menu-button" id="how-to-play">How to Play</button>
+      <button class="menu-button" id="chart-editor">Chart Editor</button>
+      <button class="menu-button" id="settings">Settings</button>
+    </div>
+  </div>
+  
+  <div class="version-info">Version 1.0</div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const diamondBg = document.getElementById('diamond-bg');
+      const colors = ['pink-hue', 'blue-hue', 'green-hue', 'red-hue'];
+      
+      // Create floating diamonds in the background
+      for (let i = 0; i < 20; i++) {
+        const diamond = document.createElement('div');
+        diamond.className = `diamond ${colors[Math.floor(Math.random() * colors.length)]}`;
+        
+        // Random position
+        diamond.style.left = `${Math.random() * 100}%`;
+        diamond.style.top = `${Math.random() * 100}%`;
+        
+        // Random animation delay
+        diamond.style.animationDelay = `${Math.random() * 5}s`;
+        
+        // Random size
+        const size = 30 + Math.random() * 40;
+        diamond.style.width = `${size}px`;
+        diamond.style.height = `${size}px`;
+        
+        diamondBg.appendChild(diamond);
+      }
+      
+      // Add event listeners to buttons
+      document.getElementById('story-mode').addEventListener('click', () => {
+        window.location.href = 'index.html';
+      });
+      
+      document.getElementById('freeplay-mode').addEventListener('click', () => {
+        openFreeplayMenu();
+      });
+      
+      document.getElementById('how-to-play').addEventListener('click', () => {
+        alert('HOW TO PLAY:\n\n• Press the arrow keys when the falling diamonds reach the hit zone\n• Hit the notes on time to score points\n• PERFECT! hits score 20 points\n• GOOD! hits score 10 points\n• OK hits score 5 points\n• EARLY/LATE hits score 2 points\n• Missing notes deducts 5 points');
+      });
+      
+      document.getElementById('chart-editor').addEventListener('click', () => {
+        window.location.href = 'chart-editor.html';
+      });
+      
+      document.getElementById('settings').addEventListener('click', () => {
+        alert('Settings menu coming soon!');
+      });
+      
+      // Function to open the freeplay menu
+      function openFreeplayMenu() {
+        // Get charts from localStorage
+        const charts = JSON.parse(localStorage.getItem('chartsList') || '[]');
+        
+        // Create freeplay dialog
+        const freeplayDialog = document.createElement('div');
+        freeplayDialog.className = 'freeplay-dialog';
+        freeplayDialog.style.position = 'fixed';
+        freeplayDialog.style.top = '50%';
+        freeplayDialog.style.left = '50%';
+        freeplayDialog.style.transform = 'translate(-50%, -50%)';
+        freeplayDialog.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+        freeplayDialog.style.borderRadius = '10px';
+        freeplayDialog.style.padding = '20px';
+        freeplayDialog.style.width = '500px';
+        freeplayDialog.style.maxWidth = '90%';
+        freeplayDialog.style.maxHeight = '80vh';
+        freeplayDialog.style.overflow = 'auto';
+        freeplayDialog.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.5)';
+        freeplayDialog.style.zIndex = '100';
+        freeplayDialog.style.color = 'white';
+        freeplayDialog.style.fontFamily = 'Arial, sans-serif';
+        
+        // Add content to dialog
+        let dialogContent = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0;">Freeplay Mode</h2>
+            <button id="close-freeplay" style="background: none; border: none; color: white; font-size: 24px; cursor: pointer;">×</button>
+          </div>
+        `;
+        
+        if (charts.length === 0) {
+          dialogContent += `
+            <p style="text-align: center; margin: 30px 0;">No custom charts found.</p>
+            <div style="text-align: center;">
+              <button id="create-chart" class="menu-button" style="width: 200px; margin: 10px auto;">Create Chart</button>
+              <button id="import-chart" class="menu-button" style="width: 200px; margin: 10px auto;">Import Chart</button>
+            </div>
+          `;
+        } else {
+          dialogContent += `
+            <div style="margin-bottom: 20px;">
+              <button id="add-chart" class="menu-button" style="width: 100%; margin-bottom: 10px;">Add New Chart</button>
+            </div>
+            <div class="chart-list" style="margin-bottom: 20px;">
+          `;
+          
+          charts.forEach((chart, index) => {
+            dialogContent += `
+              <div class="chart-item" style="background-color: rgba(255, 255, 255, 0.1); border-radius: 5px; padding: 15px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <h3 style="margin: 0 0 5px 0;">${chart.title}</h3>
+                    <p style="margin: 0; opacity: 0.7;">BPM: ${chart.bpm} | Notes: ${chart.notes.length}</p>
+                  </div>
+                  <div>
+                    <button class="play-chart menu-button" data-index="${index}" style="padding: 8px 15px; font-size: 14px;">Play</button>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+          
+          dialogContent += `</div>`;
+        }
+        
+        freeplayDialog.innerHTML = dialogContent;
+        document.body.appendChild(freeplayDialog);
+        
+        // Add event listeners
+        document.getElementById('close-freeplay').addEventListener('click', () => {
+          document.body.removeChild(freeplayDialog);
+        });
+        
+        if (charts.length === 0) {
+          document.getElementById('create-chart').addEventListener('click', () => {
+            window.location.href = 'chart-editor.html';
+          });
+          
+          document.getElementById('import-chart').addEventListener('click', () => {
+            importChart();
+          });
+        } else {
+          document.getElementById('add-chart').addEventListener('click', () => {
+            window.location.href = 'chart-editor.html';
+          });
+          
+          document.querySelectorAll('.play-chart').forEach(button => {
+            button.addEventListener('click', (e) => {
+              const index = parseInt(e.target.dataset.index);
+              playChart(charts[index]);
+            });
+          });
+        }
+      }
+      
+      // Function to play a specific chart
+      function playChart(chart) {
+        // Save the selected chart to localStorage
+        localStorage.setItem('selectedChart', JSON.stringify(chart));
+        
+        // Navigate to the game with a freeplay parameter
+        window.location.href = 'index.html?mode=freeplay';
+      }
+      
+      // Function to import a chart from JSON
+      function importChart() {
+        const jsonInput = prompt('Paste chart JSON:');
+        if (!jsonInput) return;
+        
+        try {
+          const importedData = JSON.parse(jsonInput);
+          
+          // Validate imported data
+          if (!importedData.title || !importedData.bpm || !Array.isArray(importedData.notes)) {
+            throw new Error('Invalid chart format');
+          }
+          
+          // Get existing charts
+          const charts = JSON.parse(localStorage.getItem('chartsList') || '[]');
+          
+          // Add the new chart
+          charts.push(importedData);
+          
+          // Save to localStorage
+          localStorage.setItem('chartsList', JSON.stringify(charts));
+          
+          alert(`Chart "${importedData.title}" imported successfully!`);
+          
+          // Refresh the freeplay menu
+          document.body.querySelector('.freeplay-dialog').remove();
+          openFreeplayMenu();
+          
+        } catch (error) {
+          alert('Invalid JSON format. Could not import chart.');
+          console.error(error);
+        }
+      }
+    });
+  </script>
+</body>
+</html> 
